@@ -1,0 +1,39 @@
+{
+  "name": "taomu-fetch",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/main.cjs",
+  "module": "./dist/main.js",
+  "types": "./types/main.d.ts",
+  "exports": {
+    "types": "./types/main.d.ts",
+    "import": "./dist/main.js",
+    "require": "./dist/main.cjs"
+  },
+  "files": [
+    "README.md",
+    "types",
+    "dist"
+  ],
+  "scripts": {
+    "pu": "npm run test && npm run build && npm publish",
+    "build": "node ./scripts/rm-dist.js && tsc --declaration & vite build",
+    "dev": "npm run test:ui",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:dev": "vitest",
+    "build:docs": "typedoc"
+  },
+  "dependencies": {
+    "taomu-toolkit": "^0.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vitest/ui": "^2.1.8",
+    "taomu-logger": "^0.0.1",
+    "typedoc": "^0.27.6",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6",
+    "vitest": "^2.1.8"
+  }
+}
