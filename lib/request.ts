@@ -27,7 +27,7 @@ export async function request<T extends RequestRes, P>(
     checkStatus,
     formData,
     handleErrors,
-    headers: headersObj = {},
+    headers: userHeaders = {},
     addTimeStamp,
     timeout,
     withCredentials,
@@ -39,15 +39,21 @@ export async function request<T extends RequestRes, P>(
     ...fetchOptions
   } = options
 
+  const url = REG_IS_URL.test(path) ? path : `${baseURL}${path}`
+
   // 参数处理，移除字符串两端空格 & 删除 undefined 字段
   const params = trimValues(paramsSource, trimParams, deleteUndefinedParams)
 
   // 请求头
-  const headers = new Headers(headersObj)
+  let headersObj: Record<string, any> = {}
 
-  if (!Object.prototype.hasOwnProperty.call(headersObj, 'Content-Type')) {
-    headers.append('Content-Type', formData ? 'multipart/form-data' : 'application/json;charset=utf-8')
+  if (typeof userHeaders === 'function') {
+    headersObj = userHeaders(url, params, options)
+  } else if (typeof userHeaders === 'object') {
+    headersObj = userHeaders
   }
+
+  const headers = new Headers(headersObj)
 
   if (!fetchOptions.credentials) {
     fetchOptions.credentials = withCredentials ? 'include' : 'omit'
@@ -59,7 +65,7 @@ export async function request<T extends RequestRes, P>(
 
   const sendData: RequestSendData = {
     path,
-    url: REG_IS_URL.test(path) ? path : `${baseURL}${path}`,
+    url,
     method,
     headers,
     signal: controller.signal,

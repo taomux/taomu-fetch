@@ -65,7 +65,7 @@ declare global {
     timeout?: number
 
     /** 请求头 */
-    headers?: Record<string, string>
+    headers?: Record<string, string> | ((url: string, params: any, options: RequestOptions) => Record<string, string>)
     /** 是否携带 cookie */
     withCredentials?: boolean
     /** 是否使用查询参数, 默认: false, 启用后会强制使用 url-search 传参 */
