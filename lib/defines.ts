@@ -64,7 +64,7 @@ declare global {
     /** 请求超时 */
     timeout?: number
 
-    /** 请求头 */
+    /** 请求头, 如果传入函数，将在每次请求时调用 */
     headers?: Record<string, string> | ((url: string, params: any, options: RequestOptions) => Record<string, string>)
     /** 是否携带 cookie */
     withCredentials?: boolean
