@@ -55,10 +55,6 @@ export async function request<T extends RequestRes, P>(
 
   const headers = new Headers(headersObj)
 
-  if (!fetchOptions.credentials) {
-    fetchOptions.credentials = withCredentials ? 'include' : 'omit'
-  }
-
   if (addTimeStamp) {
     defaultParams.t = Date.now()
   }
@@ -72,17 +68,26 @@ export async function request<T extends RequestRes, P>(
     ...fetchOptions,
   }
 
-  const paramsData = Object.assign({}, defaultParams, params)
+  let paramsData: any = params
+
+  if (paramsData instanceof FormData) {
+    // FormData
+  } else if (Array.isArray(paramsData)) {
+    // 数组
+  } else if (typeof paramsData === 'object') {
+    paramsData = Object.assign({}, defaultParams, params)
+  }
 
   if (useQueryParams || ['GET', 'HEAD'].includes(method!.toUpperCase())) {
     const paramsStr = queryStringify(paramsData, true)
     sendData.url = sendData.url + paramsStr
   } else if (formData) {
-    const formData = new FormData()
-    Object.keys(paramsData).forEach((key) => {
-      formData.append(key, paramsData[key])
-    })
-    sendData.body = formData
+    headers.delete('Content-Type')
+    if (paramsData instanceof FormData) {
+      sendData.body = paramsData
+    } else {
+      sendData.body = objectToFormData(paramsData)
+    }
   } else {
     sendData.body = JSON.stringify(paramsData)
   }
@@ -158,4 +163,40 @@ export async function request<T extends RequestRes, P>(
   }
 
   return resData
+}
+
+/** 将 Object 转换为 FormData，支持数组和嵌套对象 */
+function objectToFormData(obj: Record<string, any>): FormData {
+  const formData = new FormData()
+
+  function appendToFormData(data: any, parentKey: string = '') {
+    if (data !== null && typeof data === 'object') {
+      // Handle File objects directly
+      if (data instanceof File || data instanceof Blob) {
+        formData.append(parentKey, data)
+        return
+      }
+
+      // Handle arrays and objects
+      if (Array.isArray(data)) {
+        data.forEach((item, index) => {
+          const key = parentKey ? `${parentKey}[${index}]` : index.toString()
+          appendToFormData(item, key)
+        })
+      } else {
+        for (const key in data) {
+          if (data.hasOwnProperty(key)) {
+            const fullKey = parentKey ? `${parentKey}[${key}]` : key
+            appendToFormData(data[key], fullKey)
+          }
+        }
+      }
+    } else if (data !== undefined) {
+      // Handle primitive values
+      formData.append(parentKey, data)
+    }
+  }
+
+  appendToFormData(obj)
+  return formData
 }
