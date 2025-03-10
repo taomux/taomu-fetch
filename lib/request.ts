@@ -68,7 +68,7 @@ export async function request<T extends RequestRes, P>(
     ...fetchOptions,
   }
 
-  let paramsData: any = params
+  let paramsData: any = params || {}
 
   if (paramsData instanceof FormData) {
     // FormData
