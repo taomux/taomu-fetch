@@ -84,10 +84,6 @@ declare global {
     codeMap?: Record<string, string>
     /** 默认请求参数 */
     defaultParams?: Record<string, any>
-    /** 是否删除空值参数, 默认: true */
-    deleteUndefinedParams?: boolean
-    /** 是否自动去除参数的两端空格，默认: true */
-    trimParams?: boolean
     /** 成功状态码 */
     successCode?: number
     /** 登录失效状态码 */
@@ -119,4 +115,9 @@ export interface RequestHooks {
    * 请求后调用, 对应 .finally 方法
    */
   afterRequest?: <T extends RequestRes, R = any>(before: R, data: T, sendData: RequestSendData, options: RequestOptions) => any
+
+  /** 入参集中处理 */
+  handleParams: <T = any>(params: T, options: RequestOptions) => T
+  /** 返回值集中处理 */
+  handleResponse: <T = any>(res: Response, options: RequestOptions, sendData: RequestSendData) => T | Promise<T>
 }

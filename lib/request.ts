@@ -1,4 +1,4 @@
-import { trimValues, queryStringify } from 'taomu-toolkit'
+import { queryStringify } from 'taomu-toolkit'
 
 import { RequestStatus } from './defines'
 import { getRequestDefaultOptions, requestHooks } from './config'
@@ -32,9 +32,7 @@ export async function request<T extends RequestRes, P>(
     timeout,
     withCredentials,
     defaultParams = {},
-    trimParams,
     useQueryParams,
-    deleteUndefinedParams,
     successCode = RequestStatus.成功,
     ...fetchOptions
   } = options
@@ -42,7 +40,7 @@ export async function request<T extends RequestRes, P>(
   const url = REG_IS_URL.test(path) ? path : `${baseURL}${path}`
 
   // 参数处理，移除字符串两端空格 & 删除 undefined 字段
-  const params = trimValues(paramsSource, trimParams, deleteUndefinedParams)
+  const params = requestHooks.handleParams(paramsSource, options)
 
   // 请求头
   let headersObj: Record<string, any> = {}
@@ -109,22 +107,7 @@ export async function request<T extends RequestRes, P>(
 
   await fetch(sendData.url, sendData)
     .then(async (res) => {
-      let data: T = {} as T
-
-      try {
-        data = await res.json()
-      } catch (err) {
-        data.raw = await res.text().catch(() => '')
-        data.code = RequestStatus.数据格式异常
-        data.message = '返回数据不是JSON格式'
-      }
-
-      if (!res.ok && !data.code) {
-        // data.code = res.status
-        data.code = RequestStatus.状态码异常
-        data.message = `${data.message} 错误代码:${res.status}`
-      }
-
+      const data = await requestHooks.handleResponse(res, options, sendData)
       resData = data
 
       if (requestHooks.checkStatus) {
