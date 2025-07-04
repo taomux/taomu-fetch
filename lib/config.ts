@@ -27,7 +27,7 @@ export const requestHooks: RequestHooks = {
 }
 
 const defaultRequestOptions: RequestOptions = {
-  baseURL: process.env.API_BASE,
+  baseURL: '',
   timeout: 60000, // 一分钟超时
   errorType: 'toast',
   checkStatus: true,
